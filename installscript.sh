@@ -34,6 +34,7 @@ service httpd start
 service iptables stop
 
 sed -i 's/enforcing/disabled/g' /etc/selinux/config
+setenforce 0
 
 #Install cmk
 rpm -ivh $checkmkagent
