@@ -63,6 +63,7 @@ define command{
 
 #sed -i 'g/cfg_file=\/etc\/nagios\/objects\/localhost.cfg/#cfg_file=\/etc\/nagios\/objects\/localhost.cfg' /etc/nagios/nagios.cfg
 service nagios restart
+service https restart
 
 
 echo "
@@ -74,7 +75,7 @@ echo "
 ## * http://HOST/nagios
 ## * http://HOST/pnp4nagios
 ## * http://HOST/check_mk
-## * http://HOST:8000
+## * https://HOST:8000
 ##
 ###
 ## The user for Nagios is: nagiosadmin/nagiosadmin
