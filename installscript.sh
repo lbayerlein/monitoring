@@ -8,6 +8,15 @@ nagioscommands=/etc/nagios/objects/commands.cfg
 checkmk=http://mathias-kettner.de/download/check_mk-1.2.4p5.tar.gz
 checkmkagent=http://mathias-kettner.de/download/check_mk-agent-1.2.4p5-1.noarch.rpm
 dir=`pwd`
+whoami=`whoami`
+
+#areyouroot?
+if [ $whoami != root ]; then
+	echo "Do it with sudo or with root :P "
+	echo "byebye"
+	exit
+fi
+
 
 #New Repos
 rpm -ivh https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
