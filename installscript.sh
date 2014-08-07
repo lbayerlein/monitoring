@@ -3,7 +3,7 @@
 # nagios, nagiosplugins, pnp4nagios, snmp, rrdtool, checkmk
 
 #Variables
-packages="rrdtool nagios pnp4nagios nagios-plugins-all mod_python httpd xinetd wget"
+packages="rrdtool nagios pnp4nagios nagios-plugins-all mod_python httpd xinetd wget gcc gcc-c++ make"
 nagioscommands=/etc/nagios/objects/commands.cfg
 checkmk=http://mathias-kettner.de/download/check_mk-1.2.4p5.tar.gz
 checkmkagent=http://mathias-kettner.de/download/check_mk-agent-1.2.4p5-1.noarch.rpm
@@ -28,8 +28,12 @@ yum install $packages -y -y
 chkconfig nagios on
 chkconfig httpd on
 chkconfig xinetd on
+chkconfig iptables off
 service nagios start
 service httpd start
+service iptables stop
+
+sed -i 's/enforcing/disabled/g' /etc/selinux/config
 
 #Install cmk
 rpm -ivh $checkmkagent
@@ -39,7 +43,7 @@ $dir/check*/setup.sh --yes
 
 
 #Nagios settings
-sed -i -n -e :a -e '1,10!{P;N;D;};N;ba' $nagioscommands
+sed -i -n -e :a -e '1,13!{P;N;D;};N;ba' $nagioscommands
 echo "define command{
         command_name    process-host-perfdata
         command_line    /usr/bin/perl /usr/libexec/pnp4nagios/process_perfdata.pl -d HOSTPERFDATA
@@ -53,7 +57,7 @@ define command{
         }
 " >> $nagioscommands
 
-sed -i 'g/cfg_file=\/etc\/nagios\/objects\/localhost.cfg/#cfg_file=\/etc\/nagios\/objects\/localhost.cfg' /etc/nagios/nagios.cfg
+#sed -i 'g/cfg_file=\/etc\/nagios\/objects\/localhost.cfg/#cfg_file=\/etc\/nagios\/objects\/localhost.cfg' /etc/nagios/nagios.cfg
 service nagios restart
 
 
