@@ -65,7 +65,16 @@ define command{
 service nagios restart
 service https restart
 
+echo "
+/var/log/nagios*log {
+	weekly
+	rotate 2
+	compress
+	missingok
+}
+" > /etc/logrotate.d/nagios
 
+#Finish
 echo "
 #################################################
 #### Finished installation
