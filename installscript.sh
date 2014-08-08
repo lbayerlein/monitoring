@@ -16,16 +16,24 @@ if [ $whoami != root ]; then
 	echo "byebye"
 	exit
 fi
+echo -ne 'Begin install\r\n'
+echo -ne '#                                             (10%)\r'
 
 
 #New Repos
-rpm -ivh https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-rpm -ivh http://repo.ajenti.org/ajenti-repo-1.0-1.noarch.rpm 
+echo -ne 'Installing repositories\r\n'
+echo -ne '#####                                         (10%)\r'
+rpm -i --quiet https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+rpm -i --quiet http://repo.ajenti.org/ajenti-repo-1.0-1.noarch.rpm 
 
 #Install Packages
-yum install $packages -y -y
+echo -ne 'Installing new packages\r\n'
+echo -ne '##                                            (12%)\r'
+yum install $packages -q -y -y
 
 #Services
+echo -ne 'Configure services\r\n'
+echo -ne '#############                                 (24%)\r'
 chkconfig nagios on
 chkconfig httpd on
 chkconfig xinetd on
@@ -36,17 +44,23 @@ service httpd start
 service ajenti start
 service iptables stop
 
+echo -ne 'Disable SELinux\r\n'
+echo -ne '##                                            (36%)\r'
 sed -i 's/enforcing/disabled/g' /etc/selinux/config
 setenforce 0
 
 #Install cmk
+echo -ne 'Installing check mk\r\n'
+echo -ne '######################                        (48%)\r'
 rpm -ivh $checkmkagent
-wget $checkmk
-tar xvzf check_mk*
-$dir/check*/setup.sh --yes
+wget $checkmk 2>&1 1>/dev/null
+tar xvzf check_mk* 2>&1 1>/dev/null
+$dir/check*/setup.sh --yes 2>&1 1>/dev/null
 
 
 #Nagios settings
+echo -ne 'Configure nagios\r\n'
+echo -ne '###########################                   (60%)\r'
 sed -i -n -e :a -e '1,13!{P;N;D;};N;ba' $nagioscommands
 echo "define command{
         command_name    process-host-perfdata
@@ -62,9 +76,13 @@ define command{
 " >> $nagioscommands
 
 #sed -i 'g/cfg_file=\/etc\/nagios\/objects\/localhost.cfg/#cfg_file=\/etc\/nagios\/objects\/localhost.cfg' /etc/nagios/nagios.cfg
+echo -ne 'Restarting services\r\n'
+echo -ne '###################################           (72%)\r'
 service nagios restart
 service https restart
 
+echo -ne 'Setting logrotating\r\n'
+echo -ne '#########################################     (84%)\r'
 echo "
 /var/log/nagios*log {
 	weekly
@@ -74,7 +92,13 @@ echo "
 }
 " > /etc/logrotate.d/nagios
 
+#Nagvis still not implemented
+echo -ne 'Nagvis still not implemented\r\n'
+echo -ne '##########################################    (96%)\r'
+
 #Finish
+echo -ne 'Finished\r\n'
+echo -ne '############################################ (100%)\r'
 echo "
 #################################################
 #### Finished installation
