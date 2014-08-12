@@ -9,6 +9,7 @@ checkmk=http://mathias-kettner.de/download/check_mk-1.2.4p5.tar.gz
 checkmkagent=http://mathias-kettner.de/download/check_mk-agent-1.2.4p5-1.noarch.rpm
 dir=`pwd`
 whoami=`whoami`
+nolog='>/dev/null'
 
 #areyouroot?
 if [ $whoami != root ]; then
@@ -17,19 +18,19 @@ if [ $whoami != root ]; then
 	exit
 fi
 echo -ne 'Begin install\r\n'
-echo -ne '#                                             (10%)\r'
+echo -ne '#                                              (0%)\r'
 
 
 #New Repos
 echo -ne 'Installing repositories\r\n'
 echo -ne '#####                                         (10%)\r'
-rpm -i --quiet https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-rpm -i --quiet http://repo.ajenti.org/ajenti-repo-1.0-1.noarch.rpm 
+rpm -i --quiet https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm $nolog
+rpm -i --quiet http://repo.ajenti.org/ajenti-repo-1.0-1.noarch.rpm  $nolog
 
 #Install Packages
 echo -ne 'Installing new packages\r\n'
-echo -ne '##                                            (12%)\r'
-yum install $packages -q -y -y
+echo -ne '######                                        (12%)\r'
+yum install $packages -q -y -y $nolog
 
 #Services
 echo -ne 'Configure services\r\n'
@@ -45,17 +46,17 @@ service ajenti start
 service iptables stop
 
 echo -ne 'Disable SELinux\r\n'
-echo -ne '##                                            (36%)\r'
+echo -ne '###############                               (36%)\r'
 sed -i 's/enforcing/disabled/g' /etc/selinux/config
 setenforce 0
 
 #Install cmk
 echo -ne 'Installing check mk\r\n'
 echo -ne '######################                        (48%)\r'
-rpm -ivh $checkmkagent
-wget $checkmk 2>&1 1>/dev/null
-tar xvzf check_mk* 2>&1 1>/dev/null
-$dir/check*/setup.sh --yes 2>&1 1>/dev/null
+rpm -ivh $checkmkagent $nolog
+wget $checkmk $nolog
+tar xvzf check_mk* $nolog
+$dir/check*/setup.sh --yes $nolog
 
 
 #Nagios settings
@@ -76,10 +77,11 @@ define command{
 " >> $nagioscommands
 
 #sed -i 'g/cfg_file=\/etc\/nagios\/objects\/localhost.cfg/#cfg_file=\/etc\/nagios\/objects\/localhost.cfg' /etc/nagios/nagios.cfg
+sed -i 's/livestatus.o/check_mk\/livestatus.o pnp_path=\/var\/lib\/pnp4nagios\//g' /etc/nagios/nagios.cfg
 echo -ne 'Restarting services\r\n'
 echo -ne '###################################           (72%)\r'
-service nagios restart
-service https restart
+service nagios restart $nolog
+service https restart $nolog
 
 echo -ne 'Setting logrotating\r\n'
 echo -ne '#########################################     (84%)\r'
