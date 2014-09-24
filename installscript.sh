@@ -3,7 +3,7 @@
 # nagios, nagiosplugins, pnp4nagios, snmp, rrdtool, checkmk
 
 #Variables
-packages="rrdtool nagios pnp4nagios nagios-plugins-all mod_python httpd xinetd wget gcc gcc-c++ make ajenti"
+packages="nagios pnp4nagios nagios-plugins-all mod_python httpd xinetd wget gcc gcc-c++ make ajenti"
 nagioscommands=/etc/nagios/objects/commands.cfg
 checkmk=http://mathias-kettner.de/download/check_mk-1.2.4p5.tar.gz
 checkmkagent=http://mathias-kettner.de/download/check_mk-agent-1.2.4p5-1.noarch.rpm
@@ -20,6 +20,9 @@ fi
 echo -ne 'Begin install\r\n'
 echo -ne '#                                              (0%)\r'
 
+#Bugfix rrdtools
+rpm -i --quiet http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm
+
 
 #New Repos
 echo -ne 'Installing repositories\r\n'
@@ -30,6 +33,8 @@ rpm -i --quiet http://repo.ajenti.org/ajenti-repo-1.0-1.noarch.rpm  $nolog
 #Install Packages
 echo -ne 'Installing new packages\r\n'
 echo -ne '######                                        (12%)\r'
+yum install rrdtool rrdtools rrdtools-devel perl-rrdtool -q -y -y $nolog
+yum remove rpmforge-release -q -y $nolog
 yum install $packages -q -y -y $nolog
 
 #Services
