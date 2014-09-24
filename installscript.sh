@@ -3,10 +3,11 @@
 # nagios, nagiosplugins, pnp4nagios, snmp, rrdtool, checkmk
 
 #Variables
-packages="nagios pnp4nagios nagios-plugins-all mod_python httpd xinetd wget gcc gcc-c++ make ajenti"
+packages="nagios pnp4nagios nagios-plugins-all mod_python httpd xinetd wget gcc gcc-c++ make php-gd php-pdo php-mbstring php-session php-gettext php-php-gettext php-xml php graphviz graphviz-gd graphviz-devel php-pear-Image-GraphViz ajenti"
 nagioscommands=/etc/nagios/objects/commands.cfg
 checkmk=http://mathias-kettner.de/download/check_mk-1.2.4p5.tar.gz
 checkmkagent=http://mathias-kettner.de/download/check_mk-agent-1.2.4p5-1.noarch.rpm
+nagvis=http://sourceforge.net/projects/nagvis/files/NagVis%201.7/nagvis-1.7.10.tar.gz
 dir=`pwd`
 whoami=`whoami`
 nolog='>/dev/null'
@@ -100,8 +101,15 @@ echo "
 " > /etc/logrotate.d/nagios
 
 #Nagvis still not implemented
-echo -ne 'Nagvis still not implemented\r\n'
+echo -ne 'Nagvis download und entpacken\r'
+wget $nagvis -C /tmp
+tar xvzf /tmp/nagvis-1.7.10.tar.gz -C /tmp/
 echo -ne '##########################################    (96%)\r'
+
+echo -ne 'Install Nagvis\r\n'
+/tmp/nagvis-1.7.10/install.sh -n /etc/nagios -u apache -g apache -w /etc/httpd/conf.d/ -i mklivestatus -l unix:/var/spool/nagios/cmd/live -a y
+echo -ne '###########################################   (97%)\r'
+
 
 #Finish
 echo -ne 'Finished\r\n'
@@ -115,6 +123,7 @@ echo "
 ## * http://HOST/nagios
 ## * http://HOST/pnp4nagios
 ## * http://HOST/check_mk
+## * http://HOST/nagvis
 ## * https://HOST:8000
 ##
 ###
