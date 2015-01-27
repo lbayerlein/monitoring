@@ -87,7 +87,7 @@ sed -i 's/livestatus.o/check_mk\/livestatus.o pnp_path=\/var\/lib\/pnp4nagios\//
 echo -ne 'Restarting services\r\n'
 echo -ne '###################################           (72%)\r'
 service nagios restart $nolog
-service https restart $nolog
+service httpd restart $nolog
 
 echo -ne 'Setting logrotating\r\n'
 echo -ne '#########################################     (84%)\r'
