@@ -10,7 +10,7 @@ checkmkagent=http://mathias-kettner.de/download/check_mk-agent-1.2.4p5-1.noarch.
 nagvis=http://sourceforge.net/projects/nagvis/files/NagVis%201.7/nagvis-1.7.10.tar.gz
 dir=`pwd`
 whoami=`whoami`
-nolog='>/dev/null'
+nolog="> /dev/null"
 
 #on error, exit
 set -e
@@ -25,7 +25,7 @@ echo -ne 'Begin install\r\n'
 echo -ne '#                                              (0%)\r'
 
 #Bugfix rrdtools
-rpm -i --quiet http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm
+#rpm -i --quiet http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm
 
 
 #Install Packages
@@ -38,24 +38,22 @@ yum install $packages -q -y -y $nolog
 #Services
 echo -ne 'Configure services\r\n'
 echo -ne '#############                                 (24%)\r'
-chkconfig nagios on
-chkconfig httpd on
-chkconfig xinetd on
-chkconfig iptables off
+systemctl enable nagios 
+systemctl enable httpd 
+systemctl enable xinetd 
+systemctl disable firewalld 
 service nagios start
 service httpd start
-service iptables stop
+service firewalld stop
 
 echo -ne 'Disable SELinux\r\n'
 echo -ne '###############                               (36%)\r'
 sed -i 's/enforcing/disabled/g' /etc/selinux/config
-setenforce 0
 
 #Install cmk
 echo -ne 'Installing check mk\r\n'
 echo -ne '######################                        (48%)\r'
-rpm -ivh $checkmkagent $nolog
-wget $checkmk $nolog
+rpm -ivh $checkmkagent 
 
 
 #Nagios settings
@@ -79,8 +77,8 @@ define command{
 sed -i 's/livestatus.o/check_mk\/livestatus.o pnp_path=\/var\/lib\/pnp4nagios\//g' /etc/nagios/nagios.cfg
 echo -ne 'Restarting services\r\n'
 echo -ne '###################################           (72%)\r'
-service nagios restart $nolog
-service httpd restart $nolog
+service nagios restart 
+service httpd restart 
 
 echo -ne 'Setting logrotating\r\n'
 echo -ne '#########################################     (84%)\r'
